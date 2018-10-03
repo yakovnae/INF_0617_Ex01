@@ -1,1 +1,32 @@
-INF0617_Ex01:
+INF0617_Ex01, basic parallel processing
+Students: Carlos Eduardo Fernandes and Yakov Nae 
+================================================
+
+Intro:
+In this exercise we work with a list of 595 books of different sizes (11Kb to 15,1Mb). We have a simple task to preform, for each book we seek for the most frequent letter. Our goal is to reduce the total running time which is consisted of processing time + Input/Output time. First, we implemented a serial and trivial code that solves the problem. It's important is double, we can validate our parallel results and verify that their implementation did not wrote error values due to competitor threads that access shared variables for example. Moreover, the serial running time is an impornatnt reference for the parallel performance analysis (Amdel law).
+
+Parallel Strategy:
+(1) Number of threads. In this exercise we set the number of parallel threads to be 'cpu_count()'  which is the maximum number of multi-threads supported by the machine. In our case, we have 2 physical CPU's, or 4 multithreads. This number aims to occupy 100% of the machine's capacity, smaller number will enable unemployment, and higher number would increas overhead.
+(2) Split the work equally. We would like for each thread to have the same load of work. Therefore, we seek to divide the file list into equal sized groups. In other words, each thread will process the same amount of Mb of txt files. According to our division the number of files for each thread is different:
+ chunck 0 nfiles= 165  size= 107548221
+ chunck 1 nfiles= 127  size= 106424426
+ chunck 2 nfiles= 156  size= 106152794
+ chunck 3 nfiles= 147  size= 106537630
+The total size of our groups is similar, but since the files are of different sizes, the number of files in each group is different. The more even the group sizes are, the more similar will be the running time of each process. In other words, we want the parallel processes to finish together.
+(3) Printing the results. Since the task of printing the results (as well as reading the files) is competitive between the threads, it must be considered in our strategy. We found out that it is faster to save the results in the RAM while the threads are running (and therefore no compatition on access to print), and then print them all at once. To do so, we concatenate arrays within the threads and write the thread result to a thread-safe queue.
+
+Results:
+========
+As we show in the ipython file, our parallel implementation is less than half the running time of teh serial implementation. We did not get 25% acceleration since there are serial parts in the codes. Moreover, we are using only 2 physical cores. The acceleration from 2 to 3 and 4 threads is not linear:
+ Serial execution took 24.216779947280884 seconds
+ Parallel execution took 10.787965059280396 seconds
+The most frequent char within the majority of the files is the char 'e'. We found only one file on which the most frequent char is 'i' (u-rnpz810.txt).
+
+Map parallel result. We implemented a simpler solution using the built in imap_unordered implementation. The result was similar to our parallel implementation: 
+ Map execution took 10.97737979888916 seconds
+From this result we can understand that our implementation is quite efficient
+
+Conclusions:
+============
+We have managed to implement a parallel processing that is 2,24 times faster than the serial implementation. The more multi-threads the machine has to offer the better the speed-up that we can obtain.
+
